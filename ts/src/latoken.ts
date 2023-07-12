@@ -122,6 +122,7 @@ export default class latoken extends Exchange {
                         'auth/transaction/bindings/{currency}': 1,
                         'auth/transaction/{id}': 1,
                         'auth/transfer': 1,
+                        'auth/user': 1,
                     },
                     'post': {
                         'auth/order/cancel': 1,
@@ -518,14 +519,18 @@ export default class latoken extends Exchange {
         //         }
         //     ]
         //
+        const defaultType = this.safeString2 (this.options, 'fetchBalance', 'defaultType', 'spot');
+        const type = this.safeString (params, 'type', defaultType);
+        return this.parseBalance (response, type);
+    }
+
+    parseBalance (response, type = undefined, marginMode = undefined): Balances {
         const result = {
             'info': response,
             'timestamp': undefined,
             'datetime': undefined,
         };
         let maxTimestamp = undefined;
-        const defaultType = this.safeString2 (this.options, 'fetchBalance', 'defaultType', 'spot');
-        const type = this.safeString (params, 'type', defaultType);
         const types = this.safeValue (this.options, 'types', {});
         const accountType = this.safeString (types, type, type);
         const balancesByType = this.groupBy (response, 'type');
